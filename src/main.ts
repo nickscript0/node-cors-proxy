@@ -66,6 +66,6 @@ function isValidRequest(urlString: string): { valid: boolean, reason: string } {
 
 function hasUserAgent(clientRequest: Koa.Request) {
     const userAgent: string = clientRequest.get('user-agent');
-    console.log(`NDEBUG: USERAGENT IS: ${userAgent}`);
+    console.log(`Blocked User Agent: ${userAgent}`);
     return userAgent && userAgent !== '';
 }
