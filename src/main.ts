@@ -14,11 +14,12 @@ app.use(async (ctx, next) => {
 app.listen(8080);
 
 async function handleRequest(ctx: Koa.Context) {
-    const requestUrl = ctx.request.url.slice(1);
+    const requestUrl = ctx.request.url.slice(1); // Remove the preceeding /
 
-    if (!isValidHost(requestUrl)) {
+    const isValidCheck = isValidHost(requestUrl);
+    if (!isValidCheck.valid) {
         ctx.response.status = 404;
-        ctx.body = `Invalid hostname!! - ${requestUrl}`;
+        ctx.body = `Invalid hostname!! - ${isValidCheck.reason}`;
         return;
     }
 
@@ -30,7 +31,14 @@ async function handleRequest(ctx: Koa.Context) {
     }
 }
 
-function isValidHost(url: string) {
+
+function isValidHost(url: string): { valid: boolean, reason: string } {
     const hasHttp = url.startsWith('http://') || url.startsWith('https://');
-    return hasHttp && tld_test.regexp.test(url);
+    if (!hasHttp) {
+        return { valid: false, reason: 'Does not start with http[s]://' };
+    }
+    if (tld_test.regexp.test(url)) {
+        return { valid: false, reason: `Does not have a valid top level domain: ${url}` };
+    }
+    return { valid: true, reason: "" };
 }
