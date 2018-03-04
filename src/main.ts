@@ -1,4 +1,4 @@
-import {URL} from 'url';
+import { URL } from 'url';
 import * as Koa from 'koa';
 import * as request from 'request-promise-native';
 
@@ -15,9 +15,16 @@ app.use(async (ctx, next) => {
 app.listen(8080);
 
 async function handleRequest(ctx: Koa.Context) {
-    const requestUrl = ctx.request.url.slice(1); // Remove the preceeding /
+    // Validate User Agent
+    if (hasUserAgent(ctx.request)) {
+        ctx.response.status = 400;
+        ctx.body = `Not Allowed User Agent`;
+        return;
+    }
 
-    const isValidCheck = isValidRequest(requestUrl);
+    const urlString = ctx.request.url.slice(1); // Remove the preceeding /
+
+    const isValidCheck = isValidRequest(urlString);
     if (!isValidCheck.valid) {
         ctx.response.status = 404;
         ctx.body = `Invalid url: ${isValidCheck.reason}`;
@@ -25,7 +32,7 @@ async function handleRequest(ctx: Koa.Context) {
     }
 
     try {
-        const responseBody = await request.get(requestUrl);
+        const responseBody = await request.get(urlString);
         ctx.body = responseBody;
         ctx.response.set('Access-Control-Allow-Origin', '*');
     } catch (e) {
@@ -41,7 +48,7 @@ function isValidRequest(urlString: string): { valid: boolean, reason: string } {
     try {
         url = new URL(urlString);
     } catch (err) {
-        return {valid: false, reason: "Unable to parse url"};
+        return { valid: false, reason: "Unable to parse url" };
     }
 
     // Validate protocol
@@ -55,4 +62,10 @@ function isValidRequest(urlString: string): { valid: boolean, reason: string } {
         return { valid: false, reason: `Does not have a valid top level domain: ${url}` };
     }
     return { valid: true, reason: "" };
+}
+
+function hasUserAgent(clientRequest: Koa.Request) {
+    const userAgent: string = clientRequest.get('user-agent');
+    console.log(`NDEBUG: USERAGENT IS: ${userAgent}`);
+    return userAgent && userAgent !== '';
 }
