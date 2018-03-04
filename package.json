@@ -1,0 +1,16 @@
+{
+  "name": "node-cors-proxy",
+  "version": "1.0.0",
+  "description": "A nodejs reverse proxy that adds a CORS header to the proxied request.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/koa": "^2.0.44",
+    "koa": "^2.5.0"
+  }
+}
