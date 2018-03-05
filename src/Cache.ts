@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
-const CACHE_EXPIRY_SECONDS = 60;
+const CACHE_EXPIRY_SECONDS = 3600;
 const CACHE_DIR = 'filecache/';
 
 export class RequestCache {
