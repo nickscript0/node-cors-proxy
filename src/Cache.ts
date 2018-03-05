@@ -11,17 +11,22 @@ export class RequestCache {
 
     constructor() {
         this.requests = new Map();
+
+        if (!fs.existsSync(CACHE_DIR)) {
+            fs.mkdirSync(CACHE_DIR);
+        }
     }
 
     async get(url: string): Promise<string | null> {
         const reqHash = this._filenameFromUrl(url);
+        const filePath = path.join(CACHE_DIR, reqHash);
         const lastRequestTime = this.requests.get(reqHash);
         if (lastRequestTime !== undefined) {
             if (this._getNow() > (lastRequestTime + CACHE_EXPIRY_SECONDS * 1000)) {
                 // Cache expired
                 return null;
             } else {
-                return await readFile(reqHash);
+                return await readFile(filePath);
             }
         } else {
             // Doesn't exist in cache
@@ -31,7 +36,7 @@ export class RequestCache {
 
     async set(url: string, payload: string) {
         const reqHash = this._filenameFromUrl(url);
-        const filePath = path.join(CACHE_DIR, url);
+        const filePath = path.join(CACHE_DIR, reqHash);
         this.requests.set(reqHash, this._getNow());
         await writeFile(filePath, payload);
     }
