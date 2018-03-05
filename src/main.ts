@@ -1,9 +1,12 @@
 import { URL } from 'url';
+
 import * as Koa from 'koa';
 import * as request from 'request-promise-native';
 
 import * as tld_test from './regexp-top-level-domain';
+import { RequestCache } from './Cache';
 
+const cache = new RequestCache();
 const app = new Koa();
 
 
@@ -32,9 +35,18 @@ async function handleRequest(ctx: Koa.Context) {
     }
 
     try {
-        const responseBody = await request.get(urlString);
+        let responseBody = await cache.get(urlString);
+        if (responseBody === null) {
+            responseBody = await request.get(urlString);
+            // Only cache if it is not null / empty
+            if (responseBody) cache.set(urlString, responseBody);
+            console.log(`Requested: ${urlString}`);
+        } else {
+            console.log(`Cached hit: ${urlString}`);
+        }
         ctx.body = responseBody;
-        ctx.response.set('Access-Control-Allow-Origin', '*');
+        // CORS is not necessary if the proxy is on the same server as the web app
+        // ctx.response.set('Access-Control-Allow-Origin', '*');
     } catch (e) {
         ctx.body = e;
     }
