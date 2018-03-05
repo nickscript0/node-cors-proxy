@@ -34,12 +34,12 @@ function removeUrlPrefix(url: string): string {
 }
 
 async function handleRequest(ctx: Koa.Context) {
-    // Validate User Agent
-    if (!allowedUserAgent(ctx.request)) {
-        ctx.response.status = 400;
-        ctx.body = `Not Allowed User Agent`;
-        return;
-    }
+    // Validate User Agent: Javascript can't change this header, so commented out
+    // if (!allowedUserAgent(ctx.request)) {
+    //     ctx.response.status = 400;
+    //     ctx.body = `Not Allowed User Agent`;
+    //     return;
+    // }
 
     // Validate url starts with / (we make assumptions on this later)
     if (!ctx.request.url.startsWith('/')) {
@@ -102,9 +102,11 @@ function isValidRequest(urlString: string): { valid: boolean, reason: string } {
     return { valid: true, reason: "" };
 }
 
-function allowedUserAgent(clientRequest: Koa.Request) {
-    const userAgent: string | undefined = clientRequest.get('user-agent');
-    const allowed = !userAgent || userAgent === 'SAFE';
-    if (!allowed) console.log(`Blocked User Agent: ${userAgent}`);
-    return allowed;
-}
+// Browser requests can't set the User-Agent header apparently
+// Chrome gives error: Refused to set unsafe header "User-Agent"
+// function allowedUserAgent(clientRequest: Koa.Request) {
+//     const userAgent: string | undefined = clientRequest.get('user-agent');
+//     const allowed = !userAgent || userAgent === 'SAFE';
+//     if (!allowed) console.log(`Blocked User Agent: ${userAgent}`);
+//     return allowed;
+// }
