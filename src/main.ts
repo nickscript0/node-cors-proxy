@@ -6,13 +6,20 @@ import * as request from 'request-promise-native';
 import * as tld_test from './regexp-top-level-domain';
 import { RequestCache } from './Cache';
 
-const cache = new RequestCache();
-const app = new Koa();
+// ENVIRONMENT VARIABLES
+// Duration requests should be cached
+const cacheExpirySeconds = process.env.CACHE_EXPIRY_SECONDS || 3600;
 
 // If requests have a prefix path that should be ignored e.g. set to /proxy for
 //  requests of the form https://domainA/proxy/https://domainB/path
 export const IGNORE_URL_PREFIX = process.env.IGNORE_URL_PREFIX || null;
+
 if (IGNORE_URL_PREFIX) console.log(`IGNORE_URL_PREFIX set: ${IGNORE_URL_PREFIX}`);
+// END ENVIRONMENT VARIABLES
+
+const cache = new RequestCache(cacheExpirySeconds);
+const app = new Koa();
+
 
 app.use(async (ctx, next) => {
     await handleRequest(ctx);

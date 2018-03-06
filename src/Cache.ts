@@ -2,14 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
-const CACHE_EXPIRY_SECONDS = 3600;
 const CACHE_DIR = 'filecache/';
 
 export class RequestCache {
     // key: requestHash, value: LastRequestDateMilliseconds
     private requests: Map<string, number>;
+    private cacheExpirySeconds: number;
 
-    constructor() {
+    constructor(cacheExpirySeconds) {
+        this.cacheExpirySeconds = parseInt(cacheExpirySeconds, 10);
         this.requests = new Map();
 
         if (!fs.existsSync(CACHE_DIR)) {
@@ -22,7 +23,7 @@ export class RequestCache {
         const filePath = path.join(CACHE_DIR, reqHash);
         const lastRequestTime = this.requests.get(reqHash);
         if (lastRequestTime !== undefined) {
-            if (this._getNow() > (lastRequestTime + CACHE_EXPIRY_SECONDS * 1000)) {
+            if (this._getNow() > (lastRequestTime + this.cacheExpirySeconds * 1000)) {
                 // Cache expired
                 return null;
             } else {
