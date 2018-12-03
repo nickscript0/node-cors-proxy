@@ -14,6 +14,7 @@ const cacheExpirySeconds = process.env.CACHE_EXPIRY_SECONDS || 3600;
 //  requests of the form https://domainA/proxy/https://domainB/path
 export const IGNORE_URL_PREFIX = process.env.IGNORE_URL_PREFIX || null;
 
+console.log(`cacheExpirySeconds: ${cacheExpirySeconds}`);
 if (IGNORE_URL_PREFIX) console.log(`IGNORE_URL_PREFIX set: ${IGNORE_URL_PREFIX}`);
 // END ENVIRONMENT VARIABLES
 
@@ -103,7 +104,7 @@ function isValidRequest(urlString: string): { valid: boolean, reason: string } {
     }
 
     // Validate TLD
-    if (!tld_test.regexp.test(url.hostname)) {
+    if (url.hostname !== 'localhost' && !tld_test.regexp.test(url.hostname)) {
         return { valid: false, reason: `Does not have a valid top level domain: ${url}` };
     }
     return { valid: true, reason: "" };
