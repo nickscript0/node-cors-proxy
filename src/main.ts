@@ -6,19 +6,9 @@ import * as request from 'request-promise-native';
 import * as tld_test from './regexp-top-level-domain';
 import { RequestCache } from './Cache';
 
-// ENVIRONMENT VARIABLES
-// Duration requests should be cached
-const cacheExpirySeconds = process.env.CACHE_EXPIRY_SECONDS || 3600;
+import { envVars } from './environment';
 
-// If requests have a prefix path that should be ignored e.g. set to /proxy for
-//  requests of the form https://domainA/proxy/https://domainB/path
-export const IGNORE_URL_PREFIX = process.env.IGNORE_URL_PREFIX || null;
-
-console.log(`cacheExpirySeconds: ${cacheExpirySeconds}`);
-if (IGNORE_URL_PREFIX) console.log(`IGNORE_URL_PREFIX set: ${IGNORE_URL_PREFIX}`);
-// END ENVIRONMENT VARIABLES
-
-const cache = new RequestCache(cacheExpirySeconds);
+const cache = new RequestCache(envVars.cacheExpirySeconds);
 const app = new Koa();
 
 
@@ -31,9 +21,9 @@ app.listen(8080);
 
 function removeUrlPrefix(url: string): string {
     let trimmedUrl;
-    if (IGNORE_URL_PREFIX) {
+    if (envVars.ignoreUrlPrefix) {
         // Remove the entire prefix e.g. /proxy
-        trimmedUrl = url.slice(IGNORE_URL_PREFIX.length);
+        trimmedUrl = url.slice(envVars.ignoreUrlPrefix.length);
     }
 
     // Remove the preceeding /, in all cases
@@ -76,15 +66,13 @@ async function handleRequest(ctx: Koa.Context) {
             console.log(`Cached hit: ${urlString}`);
         }
         ctx.body = responseBody;
-        // CORS is not necessary if the proxy is on the same server as the web app
-        // ctx.response.set('Access-Control-Allow-Origin', '*');
+        if (envVars.corsAll) ctx.response.set('Access-Control-Allow-Origin', '*');
     } catch (e) {
         console.log(e);
         ctx.response.status = 500;
         ctx.body = 'Problem occurred during request';
     }
 }
-
 
 function isValidRequest(urlString: string): { valid: boolean, reason: string } {
     let url;
@@ -104,7 +92,8 @@ function isValidRequest(urlString: string): { valid: boolean, reason: string } {
     }
 
     // Validate TLD
-    if (url.hostname !== 'localhost' && !tld_test.regexp.test(url.hostname)) {
+    if (!envVars.extraTLDs.includes(url.hostname) && url.hostname !== 'localhost'
+        && !tld_test.regexp.test(url.hostname)) {
         return { valid: false, reason: `Does not have a valid top level domain: ${url}` };
     }
     return { valid: true, reason: "" };
