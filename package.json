@@ -16,10 +16,10 @@
     "@types/koa": "^2.0.44",
     "@types/request-promise-native": "^1.0.14",
     "koa": "^2.5.0",
-    "request": "^2.83.0",
+    "request": "^2.88.0",
     "request-promise-native": "^1.0.5"
   },
   "devDependencies": {
-    "nodemon": "^1.17.1"
+    "nodemon": "^1.18.9"
   }
 }
