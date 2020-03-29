@@ -51,7 +51,8 @@ async function handleRequest(ctx: Koa.Context) {
 
     if (ctx.request.url.startsWith(CACHE_INFO_PREFIX)) {
         const cacheUrlString = removeUrlPrefix(ctx.request.url, CACHE_INFO_PREFIX);
-        ctx.response.body = cache.getCacheInfo(cacheUrlString);
+        ctx.body = cache.getCacheInfo(cacheUrlString);
+        if (envVars.corsAll) ctx.response.set('Access-Control-Allow-Origin', '*');
         return;
     }
 
