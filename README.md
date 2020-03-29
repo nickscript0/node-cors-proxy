@@ -7,6 +7,7 @@ A nodejs reverse proxy with file based request caching, and options to add CORS 
 > The following is an example for dev only, do not use EXTRA_TLDS, CORS_ALL in production, where they won't be necessary (and for security reasons) as both the web app and the proxy should be served from the same port and hostname
 
 Step 1: Write a web app that makes requests to `http://localhost:8080/proxy/https://...`
+Step 1b: Optionally also make use of `http://localhost:8080/cache_info/https://...` to query remaining cache time for a url
 
 Step 2: Start your web app in a docker-compose environment with node-cors-proxy running
 

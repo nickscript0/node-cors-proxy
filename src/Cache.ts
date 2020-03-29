@@ -23,7 +23,7 @@ export class RequestCache {
         const filePath = path.join(CACHE_DIR, reqHash);
         const lastRequestTime = this.requests.get(reqHash);
         if (lastRequestTime !== undefined) {
-            if (this._getNow() > (lastRequestTime + this.cacheExpirySeconds * 1000)) {
+            if (this._cacheTimeRemainingMs(lastRequestTime) <= 0) {
                 // Cache expired
                 return null;
             } else {
@@ -40,6 +40,19 @@ export class RequestCache {
         const filePath = path.join(CACHE_DIR, reqHash);
         this.requests.set(reqHash, this._getNow());
         await writeFile(filePath, payload);
+    }
+
+    getCacheInfo(url: string) {
+        const reqHash = this._filenameFromUrl(url);
+        const lastRequestTimeMs = this.requests.get(reqHash);
+        return {
+            cacheTimeRemainingMs: lastRequestTimeMs ? this._cacheTimeRemainingMs(lastRequestTimeMs) : 0,
+            cacheExpiryMs: this.cacheExpirySeconds * 1000
+        };
+    }
+
+    private _cacheTimeRemainingMs(lastRequestTimeMs: number) {
+        return (lastRequestTimeMs + this.cacheExpirySeconds * 1000) - this._getNow();
     }
 
     private _getNow(): number {

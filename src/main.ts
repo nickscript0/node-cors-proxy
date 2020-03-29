@@ -9,6 +9,8 @@ import { RequestCache } from './Cache';
 import { envVars } from './environment';
 
 const cache = new RequestCache(envVars.cacheExpirySeconds);
+const CACHE_INFO_PREFIX = '/cache_info';
+
 const app = new Koa();
 
 
@@ -19,11 +21,11 @@ app.use(async (ctx, next) => {
 
 app.listen(8080);
 
-function removeUrlPrefix(url: string): string {
+function removeUrlPrefix(url: string, removePrefix: string | undefined): string {
     let trimmedUrl;
-    if (envVars.ignoreUrlPrefix) {
+    if (removePrefix) {
         // Remove the entire prefix e.g. /proxy
-        trimmedUrl = url.slice(envVars.ignoreUrlPrefix.length);
+        trimmedUrl = url.slice(removePrefix.length);
     }
 
     // Remove the preceeding /, in all cases
@@ -46,7 +48,14 @@ async function handleRequest(ctx: Koa.Context) {
         return;
     }
 
-    const urlString = removeUrlPrefix(ctx.request.url);
+
+    if (ctx.request.url.startsWith(CACHE_INFO_PREFIX)) {
+        const cacheUrlString = removeUrlPrefix(ctx.request.url, CACHE_INFO_PREFIX);
+        ctx.response.body = cache.getCacheInfo(cacheUrlString);
+        return;
+    }
+
+    const urlString = removeUrlPrefix(ctx.request.url, envVars.ignoreUrlPrefix);
 
     const isValidCheck = isValidRequest(urlString);
     if (!isValidCheck.valid) {
